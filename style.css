@@ -1,0 +1,50 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #f4f4f4;
+  color: #1f2937;
+}
+
+.page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.intro-card,
+.task-card {
+  background: white;
+  border-radius: 16px;
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+  color: #2f6f4e;
+  margin: 0 0 8px;
+}
+
+h2 {
+  color: #2f6f4e;
+  margin-top: 0;
+}
+
+#game-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+canvas {
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+}
+
+ul {
+  display: inline-block;
+  text-align: left;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
