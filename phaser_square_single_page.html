@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Year 12 Phaser Square Game</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <style>
+    :root {
+      --green: #2f6f4e;
+      --light: #f4f7f5;
+      --dark: #14201a;
+      --card: #ffffff;
+      --line: #dce5df;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--light);
+      color: var(--dark);
+    }
+
+    header {
+      background: white;
+      border-bottom: 1px solid var(--line);
+      padding: 14px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      line-height: 1.2;
+    }
+
+    header p {
+      margin: 3px 0 0;
+      font-size: 0.9rem;
+      color: #526057;
+    }
+
+    .btn {
+      border: none;
+      background: var(--green);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+
+    main {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: minmax(360px, 760px) minmax(300px, 1fr);
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+
+    #game-wrap {
+      padding: 12px;
+    }
+
+    #game-container {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      background: #0f172a;
+      border-radius: 16px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    .instructions h2, .code-card h2 {
+      margin: 0 0 8px;
+      font-size: 1.15rem;
+    }
+
+    .instructions p, .instructions li {
+      font-size: 0.96rem;
+      line-height: 1.45;
+    }
+
+    .keys {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    kbd {
+      background: #eef4f0;
+      border: 1px solid #cbd8d0;
+      border-bottom-width: 3px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    details {
+      margin-top: 14px;
+      background: #f7faf8;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    pre {
+      white-space: pre-wrap;
+      background: #111827;
+      color: #f9fafb;
+      padding: 14px;
+      border-radius: 14px;
+      overflow-x: auto;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .task {
+      border-left: 5px solid var(--green);
+      padding: 10px 12px;
+      background: #f3f8f5;
+      border-radius: 12px;
+      margin: 12px 0;
+    }
+
+    .small {
+      font-size: 0.86rem;
+      color: #526057;
+    }
+
+    @media (max-width: 920px) {
+      main { grid-template-columns: 1fr; }
+      header { align-items: flex-start; flex-direction: column; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Year 12 Phaser Game: Square Collector</h1>
+      <p>A simple one-page Phaser game using shapes only — no sprite files needed.</p>
+    </div>
+    <button class="btn" onclick="restartGame()">Restart game</button>
+  </header>
+
+  <main>
+    <section id="game-wrap" class="panel">
+      <div id="game-container"></div>
+    </section>
+
+    <aside class="panel instructions">
+      <h2>Student task</h2>
+      <p>Control the green square. Collect all the yellow coins. Avoid the red squares.</p>
+      <div class="keys">
+        <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd>
+        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>
+      </div>
+
+      <div class="task">
+        <strong>Challenge 1:</strong> Change the player speed.<br>
+        <span class="small">Look for <code>playerSpeed</code> in the JavaScript.</span>
+      </div>
+      <div class="task">
+        <strong>Challenge 2:</strong> Add more coins or obstacles.<br>
+        <span class="small">Look for the <code>coinPositions</code> and <code>obstaclePositions</code> arrays.</span>
+      </div>
+      <div class="task">
+        <strong>Challenge 3:</strong> Change the game rules.<br>
+        <span class="small">Could touching a red square lose 2 points instead of restarting?</span>
+      </div>
+
+      <details>
+        <summary>How the game works</summary>
+        <p>The game is made from rectangles and circles using Phaser graphics. The player is a square with physics enabled. Coins and obstacles are also physics objects, but they do not move.</p>
+        <p>The <code>update()</code> function runs many times per second. It checks the keyboard and changes the square’s velocity.</p>
+      </details>
+
+      <details>
+        <summary>Key Phaser ideas</summary>
+        <ul>
+          <li><strong>config</strong> sets up the game size, physics and scene.</li>
+          <li><strong>preload</strong> is empty because this version uses shapes, not image files.</li>
+          <li><strong>create</strong> builds the player, coins, obstacles and text.</li>
+          <li><strong>update</strong> checks input every frame.</li>
+        </ul>
+      </details>
+    </aside>
+
+    <section class="panel code-card" style="grid-column: 1 / -1;">
+      <h2>Teacher / student code notes</h2>
+      <p>This is a single-file webpage. Students can copy it into <code>index.html</code> in GitHub Codespaces and run it with Live Server.</p>
+      <details>
+        <summary>Show editable JavaScript only</summary>
+        <pre id="code-preview"></pre>
+      </details>
+    </section>
+  </main>
+
+  <script>
+    // =========================================================
+    // YEAR 12 PHASER SQUARE GAME
+    // Single-file version. No image assets required.
+    // =========================================================
+
+    const gameWidth = 800;
+    const gameHeight = 500;
+    const playerSpeed = 230;
+
+    let player;
+    let cursors;
+    let wasd;
+    let score = 0;
+    let scoreText;
+    let messageText;
+    let gameOver = false;
+    let game;
+
+    const coinPositions = [
+      { x: 100, y: 95 },
+      { x: 250, y: 145 },
+      { x: 450, y: 90 },
+      { x: 670, y: 135 },
+      { x: 160, y: 385 },
+      { x: 390, y: 345 },
+      { x: 650, y: 390 }
+    ];
+
+    const obstaclePositions = [
+      { x: 300, y: 250 },
+      { x: 500, y: 240 },
+      { x: 610, y: 290 },
+      { x: 180, y: 235 }
+    ];
+
+    const config = {
+      type: Phaser.AUTO,
+      parent: 'game-container',
+      width: gameWidth,
+      height: gameHeight,
+      backgroundColor: '#0f172a',
+      physics: {
+        default: 'arcade',
+        arcade: {
+          debug: false
+        }
+      },
+      scene: {
+        preload,
+        create,
+        update
+      },
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      }
+    };
+
+    function preload() {
+      // No external images are needed.
+      // We create simple square/circle textures in create().
+    }
+
+    function create() {
+      score = 0;
+      gameOver = false;
+
+      createTexture(this, 'playerSquare', 40, 40, 0x38a169, 'rect');
+      createTexture(this, 'coinCircle', 24, 24, 0xfacc15, 'circle');
+      createTexture(this, 'dangerSquare', 44, 44, 0xef4444, 'rect');
+
+      addWorldBorder(this);
+
+      player = this.physics.add.sprite(60, 60, 'playerSquare');
+      player.setCollideWorldBounds(true);
+
+      const coins = this.physics.add.staticGroup();
+      coinPositions.forEach(pos => coins.create(pos.x, pos.y, 'coinCircle'));
+
+      const obstacles = this.physics.add.staticGroup();
+      obstaclePositions.forEach(pos => obstacles.create(pos.x, pos.y, 'dangerSquare'));
+
+      this.physics.add.overlap(player, coins, collectCoin, null, this);
+      this.physics.add.overlap(player, obstacles, hitObstacle, null, this);
+
+      cursors = this.input.keyboard.createCursorKeys();
+      wasd = this.input.keyboard.addKeys('W,A,S,D');
+
+      scoreText = this.add.text(18, 16, 'Coins: 0 / ' + coinPositions.length, {
+        fontFamily: 'Arial',
+        fontSize: '22px',
+        color: '#ffffff'
+      });
+
+      messageText = this.add.text(gameWidth / 2, gameHeight - 42, 'Collect every coin. Avoid the red squares!', {
+        fontFamily: 'Arial',
+        fontSize: '20px',
+        color: '#ffffff'
+      }).setOrigin(0.5);
+    }
+
+    function update() {
+      if (gameOver) {
+        player.setVelocity(0, 0);
+        return;
+      }
+
+      player.setVelocity(0, 0);
+
+      if (cursors.left.isDown || wasd.A.isDown) {
+        player.setVelocityX(-playerSpeed);
+      } else if (cursors.right.isDown || wasd.D.isDown) {
+        player.setVelocityX(playerSpeed);
+      }
+
+      if (cursors.up.isDown || wasd.W.isDown) {
+        player.setVelocityY(-playerSpeed);
+      } else if (cursors.down.isDown || wasd.S.isDown) {
+        player.setVelocityY(playerSpeed);
+      }
+
+      player.body.velocity.normalize().scale(playerSpeed);
+    }
+
+    function collectCoin(player, coin) {
+      coin.disableBody(true, true);
+      score += 1;
+      scoreText.setText('Coins: ' + score + ' / ' + coinPositions.length);
+
+      if (score === coinPositions.length) {
+        gameOver = true;
+        messageText.setText('You win! Press Restart game to play again.');
+      }
+    }
+
+    function hitObstacle(player, obstacle) {
+      gameOver = true;
+      player.setTint(0xffffff);
+      obstacle.setTint(0x7f1d1d);
+      messageText.setText('Game over! You touched a red square.');
+    }
+
+    function createTexture(scene, key, width, height, colour, shape) {
+      const graphics = scene.add.graphics();
+      graphics.fillStyle(colour, 1);
+
+      if (shape === 'circle') {
+        graphics.fillCircle(width / 2, height / 2, width / 2);
+      } else {
+        graphics.fillRoundedRect(0, 0, width, height, 6);
+      }
+
+      graphics.generateTexture(key, width, height);
+      graphics.destroy();
+    }
+
+    function addWorldBorder(scene) {
+      const graphics = scene.add.graphics();
+      graphics.lineStyle(4, 0x94a3b8, 1);
+      graphics.strokeRoundedRect(4, 4, gameWidth - 8, gameHeight - 8, 14);
+    }
+
+    function restartGame() {
+      if (game) {
+        game.destroy(true);
+      }
+      game = new Phaser.Game(config);
+    }
+
+    game = new Phaser.Game(config);
+
+    document.getElementById('code-preview').textContent = document.querySelector('script').textContent.trim();
+  </script>
+</body>
+</html>
